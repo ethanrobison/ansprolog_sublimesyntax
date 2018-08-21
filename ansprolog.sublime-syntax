@@ -1,0 +1,186 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: ANSProlog
+file_extensions:
+  - lp
+
+scope: source.ansprolog
+
+contexts:
+  main:
+    - include: normal_programs
+
+  general:
+    - include: keywords
+    - include: terms
+    - include: comments
+  #   - match: '\{'
+  #     push: braces
+  #   - match: '\}'
+  #     scope: invalid.illegal.ansprolog
+
+  # braces:
+  #   - meta_scope: parens.ansprolog
+  #   - include: main
+  #   - match: '\}'
+  #     pop: true
+
+  #
+  # Terms
+
+  terms:
+    - include: functions
+    - include: simple_terms
+
+  simple_terms:
+    # Integers
+    - match: '\b(-)?[0-9]+\b'
+      scope: constant.numeric.ansprolog
+
+    # Constants
+    - match: '\b_?[a-z]\w*\b'
+      scope: constant.other.ansprolog
+
+    # Strings
+    - match: '"'
+      scope: punctuation.definition.string.begin.ansprolog
+      push: double_quoted_string
+
+    # Variables
+    - match: '\b_?[A-Z]\w*\b'
+      scope: variable.other.readwrite.ansprolog
+
+    # Otherwise
+    - match: '_'
+      scope: variable.other.ansprolog
+
+    - match: '#sup|#inf'
+      scope: constant.other.ansprolog
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.ansprolog
+    - match: '\\.'
+      scope: constant.character.escape.ansprolog
+    - match: '"'
+      scope: punctuation.definition.string.end.ansprolog
+      pop: true
+
+  functions:
+    - match: '(\b_?[a-z]\w*)(\()'
+      captures:
+        1: entity.name.function.ansprolog
+        2: punctuation.section.parens.begin.ansprolog
+      push: function_call
+
+  function_call:
+    - include: main
+    - match: '\)'
+      scope: punctuation.section.parens.end.ansprolog
+      pop: true
+
+  tuples:
+    - match: '\('
+      scope: punctuation.section.parens.begin.ansprolog
+      push: in_tuple
+  
+  in_tuple:
+    - match: '\)'
+      scope: punctuation.section.parens.end.ansprolog
+      pop: true
+
+  #
+  # Keywords, operators, etc.
+  keywords:
+    - match: 'not'
+      scope: keyword.control.ansprolog
+
+    # Arithmetic
+    - match: '\+|-|\*|/|\\|\||\*\*|&|\?|\^|~'
+      scope: 'keyword.operator.ansprolog'
+
+    # Comparisons
+    - match: '=|!=|<|<=|>|>='
+      scope: keyword.operator.ansprolog
+
+    # Intervals
+    - match: '\b\w+\b ?\.\. ?\b\w+\b'
+      scope: keyword.operator.ansprolog
+
+    # Aggregates
+    - match: '#(count|sum\+?|min|max|minimize|maximize)\b'
+      scope: keyword.word.ansprolog
+
+    # Meta Keywords
+    - match: '#(script|end|show|const|external|program|include)'
+      scope: keyword.other.ansprolog
+
+    # Other Keywords
+    - match: ':(?!(-|~))|;|@'
+      scope: keyword.operator.ansprolog
+
+  #
+  # Normal Programs
+
+  # Facts, rules, and integrity constraints.
+  normal_programs:
+    - include: general
+    - match: ':-|:~'
+      scope: keyword.control.ansprolog
+      push: form_body
+
+  form_body:
+    - meta_content_scope: form_body.ansprolog
+    - include: general
+    - match: ':-|:~'
+      scope: invalid.illegal.ansprolog
+    - match: '\.'
+      pop: true
+
+  # keywords:
+  #   - match: '#(show|count|max|min)' # TODO lots more here...
+  #     scope: keyword.ansprolog
+
+  #   - match: 'not'
+  #     scope: keyword.control.ansprolog
+
+  # terms:
+  #   # Strings begin and end with quotes, and use backslashes as an escape
+  #   # character
+  #   - match: '"'
+  #     scope: punctuation.definition.string.begin.ansprolog
+  #     push: double_quoted_string
+
+  #   # Comments begin with a '//' and finish at the end of the line
+  #   - match: '%'
+  #     scope: punctuation.definition.comment.ansprolog
+  #     push: line_comment
+
+  #   # Range.
+  #   - match: '[a-z0-9_]+ ?\.\. ?[a-z0-9_]+'
+  #     scope: constant.other.ansprolog
+
+  #   # Constants are either symbolic, starting with a lowercase letter (or quoted); or they are numeric.
+  #   - match: '\b(-)?[0-9.]+\b'
+  #     scope: constant.numeric.ansprolog
+
+  #   - match: '\b[a-z]\w*\b'
+  #     scope: constant.other.ansprolog
+
+  #   # Variables start with an uppercase letter.
+  #   - match: '\b[A-Z]\w*\b'
+  #     scope: variable.other.ansprolog
+
+  #   # Functions (arithmetic).
+  #   - match: '\+|-|\*|\|=|==|!=|>|>=|<|<='
+  #     scope: keyword.operator.ansprolog
+
+  comments:
+    - match: '%'
+      scope: punctuation.definition.comment.ansprolog
+      push: line_comment
+
+  line_comment:
+    - meta_scope: comment.line.ansprolog
+    - match: $
+      pop: true
